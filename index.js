@@ -1,8 +1,8 @@
 const fs = require('fs');
 const Jimp = require('jimp');
-
+const startTime = performance.now();
 // 画像ファイルのパス
-const imagePath = 'test.png';
+const imagePath = 'test.jpg';
 
 // 画像を読み込む
 Jimp.read(imagePath, function (err, image) {
@@ -25,6 +25,10 @@ Jimp.read(imagePath, function (err, image) {
     }
   }
   const uniqueHex = Array.from(new Set(hexCunt));
+  const hexObj = {};
+  uniqueHex.map((un, _v) => {
+    hexObj[un] = _v;
+  })
   console.log("Unique Complete")
 
   // 画像のピクセルを1つずつ処理する
@@ -33,20 +37,22 @@ Jimp.read(imagePath, function (err, image) {
     for (let x = 0; x < width; x++) {
       // ピクセルの色情報を取得
       const pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
-      const tag = uniqueHex.indexOf(rgba2hex(`rgba(${pixelColor.r},${pixelColor.g},${pixelColor.b})`))
-      console.log(tag)
+      const tag = hexObj[rgba2hex(`rgba(${pixelColor.r},${pixelColor.g},${pixelColor.b})`)]
       // 配列に格納
       row.push(`<i${tag}></i${tag}>`);
     }
     pixels.push(`<l>` + row.join("") + `</l>`);
+    console.log((y + 1) / height * 100 + "%")
   }
 
-  const html = `<html><head><meta charset="UTF-8" /><title></title><style>l *{width:1px;height:1px}l{display:flex}${uniqueHex.map((un,_v)=>{return `i${_v}{background:#${un}}`}).join("")}</style></head><body>${pixels.join("")}</body></html>`;
+  const html = `<html><head><meta charset="UTF-8" /><title></title><style>l *{width:1px;height:1px}l{display:flex}${uniqueHex.map((un, _v) => { return `i${_v}{background:#${un}}` }).join("")}</style></head><body>${pixels.join("")}</body></html>`;
 
   // ピクセルの色情報をファイルに保存
   fs.writeFile('pixels.html', html, function (err) {
     if (err) throw err;
     console.log('Done!');
+    const endTime = performance.now();
+    console.log(endTime - startTime);
     console.log(uniqueHex.length)
   });
 });
