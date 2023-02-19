@@ -20,7 +20,7 @@ Jimp.read(imagePath, function (err, image) {
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
-      const hex = rgba2hex(`rgba(${pixelColor.r},${pixelColor.g},${pixelColor.b})`).slice( 0, -2 )
+      const hex = rgba2hex(`rgba(${pixelColor.r},${pixelColor.g},${pixelColor.b})`).slice(0, -2)
       hexCunt.push(hex)
     }
   }
@@ -37,15 +37,21 @@ Jimp.read(imagePath, function (err, image) {
     for (let x = 0; x < width; x++) {
       // ピクセルの色情報を取得
       const pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
-      const tag = hexObj[rgba2hex(`rgba(${pixelColor.r},${pixelColor.g},${pixelColor.b})`).slice( 0, -2 )]
+      const tag = hexObj[rgba2hex(`rgba(${pixelColor.r},${pixelColor.g},${pixelColor.b})`).slice(0, -2)]
       // 配列に格納
-      row.push(`<i${tag}></i${tag}>`);
+      row.push(tag);
     }
-    pixels.push(`<l>` + row.join("") + `</l>`);
+    pixels.push(row);
     console.log((y + 1) / height * 100 + "%")
   }
 
-  const html = `<html><head><meta charset="UTF-8" /><title></title><style>l *{width:1px;height:1px}l{display:flex}${uniqueHex.map((un, _v) => { return `i${_v}{background:#${un}}` }).join("")}</style></head><body>${pixels.join("")}</body></html>`;
+  const pixelArray = compressArrays(pixels);
+
+  const div = pixelArray.map((pixels) => {
+    return "<l>" + pixels.map((pixel) => { return pixel.c == 1 ? `<i${pixel.v}></i${pixel.v}>` : `<i${pixel.v} style="width:${pixel.c}px"></i${pixel.v}>` }).join("") + "</l>"
+  }).join("")
+
+  const html = `<html><head><meta charset="UTF-8" /><title></title><style>l *{width:0.1px;height:0.1px}l{display:flex}${uniqueHex.map((un, _v) => { return `i${_v}{background:#${un}}` }).join("")}</style></head><body>${div}</body></html>`;
 
   // ピクセルの色情報をファイルに保存
   fs.writeFile('pixels.html', html, function (err) {
@@ -78,4 +84,36 @@ function rgba2hex(orig) {
   hex = hex + a;
 
   return hex;
+}
+
+
+function compressArrays(arrays) {
+  const result = [];
+
+  for (let i = 0; i < arrays.length; i++) {
+    const arr = arrays[i];
+    const compressedArr = compressArray(arr);
+    result.push(compressedArr);
+  }
+
+  return result;
+}
+
+function compressArray(arr) {
+  const result = [];
+  let count = 1;
+  let value = arr[0];
+
+  for (let i = 1; i < arr.length; i++) {
+    if (arr[i] === value) {
+      count++;
+    } else {
+      result.push({ v: value, c: count });
+      count = 1;
+      value = arr[i];
+    }
+  }
+
+  result.push({ v: value, c: count });
+  return result;
 }
