@@ -2,7 +2,7 @@ const fs = require('fs');
 const Jimp = require('jimp');
 const startTime = performance.now();
 // 画像ファイルのパス
-const imagePath = 'test.jpg';
+const imagePath = 'test.png';
 
 // 画像を読み込む
 Jimp.read(imagePath, function (err, image) {
@@ -46,12 +46,12 @@ Jimp.read(imagePath, function (err, image) {
   }
 
   const pixelArray = compressArrays(pixels);
-
+  const tUniquePixelW = [];
   const div = pixelArray.map((pixels) => {
-    return "<l>" + pixels.map((pixel) => { return pixel.c == 1 ? `<i${pixel.v}></i${pixel.v}>` : `<i${pixel.v} style="width:${pixel.c}px"></i${pixel.v}>` }).join("") + "</l>"
+    return "<l>" + pixels.map((pixel) => { tUniquePixelW.push(pixel.c.toString().replace( '.', '-' )); return pixel.c == 1 ? `<i${pixel.v}></i${pixel.v}>` : `<i${pixel.v} class="w${pixel.c}"></i${pixel.v}>` }).join("") + "</l>"
   }).join("")
-
-  const html = `<html><head><meta charset="UTF-8" /><title></title><style>l *{width:0.1px;height:0.1px}l{display:flex}${uniqueHex.map((un, _v) => { return `i${_v}{background:#${un}}` }).join("")}</style></head><body>${div}</body></html>`;
+  const uniquePixelW = Array.from(new Set(tUniquePixelW));
+  const html = `<html><head><meta charset="UTF-8" /><title></title><style>l *{width:1px;height:1px}l{display:flex}${uniqueHex.map((un, _v) => { return `i${_v}{background:#${un}}` }).join("")}${uniquePixelW.map((_v) => { return `.w${_v.toString().replace( '.', '-' )}{width:${_v}px}` }).join("")}</style></head><body>${div}</body></html>`;
 
   // ピクセルの色情報をファイルに保存
   fs.writeFile('pixels.html', html, function (err) {
