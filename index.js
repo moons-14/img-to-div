@@ -20,7 +20,7 @@ Jimp.read(imagePath, function (err, image) {
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
-      const hex = rgba2hex(`rgba(${pixelColor.r},${pixelColor.g},${pixelColor.b})`)
+      const hex = rgba2hex(`rgba(${pixelColor.r},${pixelColor.g},${pixelColor.b})`).slice( 0, -2 )
       hexCunt.push(hex)
     }
   }
@@ -37,7 +37,7 @@ Jimp.read(imagePath, function (err, image) {
     for (let x = 0; x < width; x++) {
       // ピクセルの色情報を取得
       const pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
-      const tag = hexObj[rgba2hex(`rgba(${pixelColor.r},${pixelColor.g},${pixelColor.b})`)]
+      const tag = hexObj[rgba2hex(`rgba(${pixelColor.r},${pixelColor.g},${pixelColor.b})`).slice( 0, -2 )]
       // 配列に格納
       row.push(`<i${tag}></i${tag}>`);
     }
