@@ -2,7 +2,10 @@ const fs = require('fs');
 const Jimp = require('jimp');
 const startTime = performance.now();
 // 画像ファイルのパス
-const imagePath = 'test.jpg';
+const imagePath = 'test.png';
+
+//ピクセルの幅
+const imgPixelSize = 5;
 
 // 画像を読み込む
 Jimp.read(imagePath, function (err, image) {
@@ -23,13 +26,13 @@ Jimp.read(imagePath, function (err, image) {
       const hex = rgba2hex(`rgba(${pixelColor.r},${pixelColor.g},${pixelColor.b})`).slice(0, -2)
       hexCunt.push(hex)
     }
+    console.log(Math.round((y + 1) / height * 50) + "%")
   }
   const uniqueHex = Array.from(new Set(hexCunt));
   const hexObj = {};
   uniqueHex.map((un, _v) => {
     hexObj[un] = _v;
   })
-  console.log("Unique Complete")
 
   // 画像のピクセルを1つずつ処理する
   for (let y = 0; y < height; y++) {
@@ -42,17 +45,17 @@ Jimp.read(imagePath, function (err, image) {
       row.push(tag);
     }
     pixels.push(row);
-    console.log((y + 1) / height * 100 + "%")
+    console.log(Math.round((y + 1) / height * 50 + 50) + "%")
   }
   const backgroundColorIndex = mostFrequentValue(pixels);
   const isColorBackNone = false;
   const pixelArray = compressArrays(pixels);
   const tUniquePixelW = [];
   const div = pixelArray.map((pixels) => {
-    return "<l>" + pixels.map((pixel) => { tUniquePixelW.push(pixel.c.toString().replace('.', '-')); return pixel.c == 1 ? `<i${pixel.v}></i${pixel.v}>` : `<i${pixel.v} class="w${pixel.c}"></i${pixel.v}>` }).join("") + "</l>"
+    return "<l>" + pixels.map((pixel) => { tUniquePixelW.push(pixel.c); return pixel.c == 1 ? `<i${pixel.v}></i${pixel.v}>` : `<i${pixel.v} class="w${pixel.c}"></i${pixel.v}>` }).join("") + "</l>"
   }).join("")
   const uniquePixelW = Array.from(new Set(tUniquePixelW));
-  const html = `<html><head><meta charset="UTF-8" /><title></title><style>l *{width:1px;height:1px}l{display:flex}${uniqueHex.map((un, _v) => { return `i${_v}{background:#${_v == backgroundColorIndex && isColorBackNone ? isColorBackNone : un}}` }).join("")}${uniquePixelW.map((_v) => { return `.w${_v.toString().replace('.', '-')}{width:${_v}px}` }).join("")}</style></head><body>${div}</body></html>`;
+  const html = `<html><head><meta charset="UTF-8" /><title></title><style>l *{width:${imgPixelSize}px;height:${imgPixelSize}px}l{display:flex}${uniqueHex.map((un, _v) => { return `i${_v}{background:#${_v == backgroundColorIndex && isColorBackNone ? isColorBackNone : un}}` }).join("")}${uniquePixelW.map((_v) => { return `.w${_v}{width:${_v * imgPixelSize}px}` }).join("")}</style></head><body>${div}</body></html>`;
 
   // ピクセルの色情報をファイルに保存
   fs.writeFile('pixels.html', html, function (err) {
